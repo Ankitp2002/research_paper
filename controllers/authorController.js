@@ -1,5 +1,6 @@
 const Author = require("../models/authorModel");
 const path = require("path");
+const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const User = require("../models/userModel");
 // Get all author
@@ -21,7 +22,24 @@ exports.getAllAuthorPaper = async (req, res) => {
       ],
     }); // Adjust based on your ORM
 
-    res.json(authors);
+    const token = req?.headers["authorization"]?.split(" ")[1]; // Extract the token from the Authorization header
+
+    if (token) {
+      // Verify the token
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      // Attach user data to the request object
+      const data = { user_id: decoded.user_id, username: decoded.username };
+      console.log(data);
+      debugger;
+      // Filter authors based on the user_id from the token
+      const filteredAuthors = authors.filter(
+        (author) => author.author_id == data.user_id
+      );
+
+      res.json(filteredAuthors);
+    } else {
+      res.json(authors);
+    }
   } catch (error) {
     res.status(500).json({ message: "Error retrieving authors", error });
   }
