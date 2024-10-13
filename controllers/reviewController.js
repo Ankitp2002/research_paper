@@ -61,13 +61,13 @@ exports.deleteReview = async (req, res) => {
 
 exports.reviewPaperStatusUpdate = async (req, res) => {
   try {
-    const { status, paper_id } = req.body; // Assume the new status is sent in the request body
+    const { status, paper_id, comment } = req.body; // Assume the new status is sent in the request body
     console.log(status);
-    console.log(paper_id);
+    console.log(comment);
 
     // Update the status of the review where review_id matches the request
     const updated = await Author.update(
-      { status: status }, // The status to be updated
+      { status: status, keywords: comment }, // The status to be updated
       { where: { id: paper_id } } // Where clause to find the correct review
     );
 

@@ -8,7 +8,7 @@ exports.getAllAuthorPaper = async (req, res) => {
   const filer_status = req.params;
 
   if (filer_status?.status == "excluded") {
-    filer_status.status = ["submitted", "reviewed3"];
+    filer_status.status = ["submitted", "reviewed"];
   }
   try {
     // Use the appropriate method to find authors by status

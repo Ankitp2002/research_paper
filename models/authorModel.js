@@ -20,6 +20,7 @@ const Author = sequelize.define(
       type: DataTypes.ENUM("submitted", "reviewed", "published"),
       allowNull: false,
     },
+    
   },
   {
     tableName: "author", // Ensure the table name matches your database schema
