@@ -17,7 +17,7 @@ const Author = sequelize.define(
     file_path: { type: DataTypes.STRING(255) },
     keywords: { type: DataTypes.TEXT },
     status: {
-      type: DataTypes.ENUM("submitted", "reviewed", "published"),
+      type: DataTypes.ENUM("submitted", "reviewed", "published", "rejected"),
       allowNull: false,
     },
   },

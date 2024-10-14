@@ -63,9 +63,10 @@ exports.deleteReview = async (req, res) => {
 
 exports.reviewPaperStatusUpdate = async (req, res) => {
   try {
-    const { status, paper_id, comment, review_id } = req.body; // Assume the new status is sent in the request body
+    const { status, paper_id, comment } = req.body; // Assume the new status is sent in the request body
     const data = verifyToken(req?.headers["authorization"]?.split(" ")[1]);
-    if (data) {
+    console.log(data);
+    if (data.user_id) {
       // Update the status of the review where review_id matches the request
       const updated = await Author.update(
         { status: status, keywords: comment }, // The status to be updated
@@ -98,7 +99,10 @@ exports.reviewPaperStatusUpdate = async (req, res) => {
 exports.getPublishPaper = async (req, res) => {
   console.log("Hear.....................................");
   const data = verifyToken(req?.headers["authorization"]?.split(" ")[1]);
-  if (data) {
+  const filer_status = req.params;
+  let publishedPapers;
+
+  if (data?.user_id) {
     const reviews = await Review.findAll({
       where: { reviewer_id: data.user_id },
       attributes: ["paper_id"],
@@ -114,11 +118,8 @@ exports.getPublishPaper = async (req, res) => {
     // Step 2: Extract the paper_ids from the result
     const paperIds = reviews.map((review) => review.paper_id);
 
-    const filer_status = req.params;
-    console.log(filer_status);
-
     // Step 3: Fetch from the Author table where paper_id is in paperIds and status is 'published'
-    const publishedPapers = await Author.findAll({
+    publishedPapers = await Author.findAll({
       where: {
         id: paperIds,
         status: filer_status.status,
@@ -130,9 +131,49 @@ exports.getPublishPaper = async (req, res) => {
         },
       ],
     });
-
-    res.status(200).json(publishedPapers);
   } else {
-    res.json(500);
+    publishedPapers = await Author.findAll({
+      where: {
+        status: filer_status.status,
+      },
+      include: [
+        {
+          model: User, // Adjust this based on your Paper model definition
+          attributes: ["id", "username"], // Include attributes you want from Paper
+        },
+      ],
+    });
+    const paper_ids = publishedPapers.map((paper) => paper.id);
+    const reviews = await Review.findAll({
+      where: {
+        paper_id: paper_ids, // Use 'where' to filter reviews by paper_ids
+      },
+      include: [
+        // Include associated User model
+        {
+          model: User, // Adjust this based on your User model definition
+          attributes: ["id", "username"], // Include specific attributes from User
+        },
+      ],
+    });
+
+    publishedPapers = publishedPapers.map((paper) => {
+      // Find reviews for the current paper
+      const paperReviews = reviews.filter(
+        (review) => review.paper_id === paper.id
+      );
+
+      // Add reviewer information to the paper object
+      return {
+        ...paper.get(), // Spread the paper data
+        Reviewer: paperReviews
+          .map((review) => ({
+            reviewer_name: review?.User?.username,
+            reviewer_id: review?.User?.id,
+          }))
+          .filter((reviewer) => reviewer.reviewer_name && reviewer.reviewer_id), // Filter out empty reviewers
+      };
+    });
   }
+  res.status(200).json(publishedPapers);
 };
