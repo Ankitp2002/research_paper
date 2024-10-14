@@ -3,6 +3,7 @@ const path = require("path");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const User = require("../models/userModel");
+const verifyToken = require("../utils");
 // Get all author
 exports.getAllAuthorPaper = async (req, res) => {
   const filer_status = req.params;
@@ -21,16 +22,9 @@ exports.getAllAuthorPaper = async (req, res) => {
         },
       ],
     }); // Adjust based on your ORM
-
-    const token = req?.headers["authorization"]?.split(" ")[1]; // Extract the token from the Authorization header
-
+    const token = req?.headers["authorization"]?.split(" ")[1];
     if (token) {
-      // Verify the token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // Attach user data to the request object
-      const data = { user_id: decoded.user_id, username: decoded.username };
-      console.log(data);
-      debugger;
+      const data = verifyToken(token); // Extract the token from the Authorization header
       // Filter authors based on the user_id from the token
       const filteredAuthors = authors.filter(
         (author) => author.author_id == data.user_id
