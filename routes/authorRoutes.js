@@ -27,6 +27,10 @@ router.post(
   authorController.createAuthorPaper
 );
 
-router.put("/:id", authorController.updateAuthorPaper);
+router.post(
+  "/paper/:id",
+  upload.single("file"),
+  authorController.updateAuthorPaper
+);
 
 module.exports = router;

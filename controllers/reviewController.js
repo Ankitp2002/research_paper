@@ -65,7 +65,6 @@ exports.reviewPaperStatusUpdate = async (req, res) => {
   try {
     const { status, paper_id, comment } = req.body; // Assume the new status is sent in the request body
     const data = verifyToken(req?.headers["authorization"]?.split(" ")[1]);
-    console.log(data);
     if (data.user_id) {
       // Update the status of the review where review_id matches the request
       const updated = await Author.update(

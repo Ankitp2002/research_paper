@@ -1,9 +1,9 @@
 const Author = require("../models/authorModel");
 const path = require("path");
 const jwt = require("jsonwebtoken");
-const fs = require("fs");
 const User = require("../models/userModel");
 const verifyToken = require("../utils");
+const fs = require("fs");
 // Get all author
 exports.getAllAuthorPaper = async (req, res) => {
   const filer_status = req.params;
@@ -89,12 +89,68 @@ exports.createAuthorPaper = async (req, res) => {
 };
 
 // Update a author
+
 exports.updateAuthorPaper = async (req, res) => {
   try {
+    // Check if the author exists
+    const author = await Author.findByPk(req.params.id);
+    if (!author) {
+      return res.status(404).json({ message: "Author not found" });
+    }
+
+    debugger;
+    const file = req.file;
+
+    // If there's a file in the request, handle the file update
+    if (file) {
+      // Check if an old file exists and remove it
+      if (author.file_path) {
+        // Ensure the file path is correctly constructed and absolute
+        const oldFilePath = path.resolve(author.file_path);
+
+        // Check if the file exists before trying to delete
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlink(oldFilePath, (err) => {
+            if (err) {
+              console.error(`Error deleting old file: ${err.message}`);
+              // Optionally, you can choose to return an error if deleting the old file is critical
+              // return res.status(500).json({ message: "Failed to delete old file" });
+            } else {
+              console.log(`Successfully deleted old file: ${oldFilePath}`);
+            }
+          });
+        } else {
+          console.error("Old file does not exist, skipping deletion");
+        }
+      }
+
+      // Set the new file path
+      // Get the file from the request
+
+      if (!file) {
+        return res.status(400).json({ message: "File is required......" });
+      }
+
+      const upload_path = path.join(__dirname, "../uploads/papers/"); // Path to save the file
+
+      // Ensure the 'uploads' directory exists
+      if (!fs.existsSync(upload_path)) {
+        fs.mkdirSync(upload_path, { recursive: true });
+      }
+      const filePath = path.join(upload_path, file.filename);
+      req.body.file_path = filePath;
+    }
+
+    // Update the author data (both file and other fields)
     const [updated] = await Author.update(req.body, {
-      where: { author_id: req.params.id },
+      where: { id: req.params.id },
     });
-    if (!updated) return res.status(404).json({ message: "Author not found" });
+
+    if (!updated) {
+      return res.status(404).json({ message: "Failed to update author" });
+    }
+
+    // Fetch the updated author to return the new details
     const updatedAuthor = await Author.findByPk(req.params.id);
     res.json(updatedAuthor);
   } catch (error) {
