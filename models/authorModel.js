@@ -8,6 +8,9 @@ const Author = sequelize.define(
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
     title: { type: DataTypes.STRING(255), allowNull: false },
+    abstract: { type: DataTypes.STRING(255), allowNull: false },
+    other_authors: { type: DataTypes.STRING(255), allowNull: false },
+    referace: { type: DataTypes.STRING(255), allowNull: false },
     // abstract: { type: DataTypes.TEXT }, // Uncomment if you need an abstract field
     author_id: {
       type: DataTypes.INTEGER,

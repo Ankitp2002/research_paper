@@ -53,7 +53,8 @@ exports.getAuthorById = async (req, res) => {
 // Create a new author
 exports.createAuthorPaper = async (req, res) => {
   try {
-    const { title, author_id, status } = req.body;
+    const { title, author_id, status, abstract, other_authors, referace } =
+      req.body;
     const file = req.file;
     // Get the file from the request
 
@@ -75,6 +76,9 @@ exports.createAuthorPaper = async (req, res) => {
         author_id,
         file_path: filePath, // Store the relative path to the file
         status,
+        abstract,
+        referace,
+        other_authors,
       });
 
       res.status(201).json(paper);
